@@ -1,2 +1,2 @@
 # Energy Trading
-Quantitative research framework for energy markets (power, gas, carbon, oil).
+In Progress Quantitative research framework for energy markets (power, gas, carbon, oil).
