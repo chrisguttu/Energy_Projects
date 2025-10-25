@@ -27,12 +27,12 @@ class BlackScholes(OptionModel):
     def call_price(self) -> float:
         " Call price using stock spot as underlying. Remeber not to discount S0"
         d1, d2 = self.d1_d2(self.S0)
-        return (self.S0 * norm.cdf(d1) - (np.exp(self.r * -self.T) * self.K * norm.cdf(d2)))
+        return (self.S0 * norm.cdf(d1) - (np.exp(-self.r * self.T) * self.K * norm.cdf(d2)))
     
     def put_price(self)-> float:
         " Put price using stock spot as underlying. Remeber not to discount S0"
         d1, d2 = self.d1_d2(self.S0)
-        return (np.exp(self.r * -self.T) * self.K * norm.cdf(d2)) - (self.S0 * norm.cdf(d1))
+        return (np.exp(-self.r * self.T) * self.K * norm.cdf(d2)) - (self.S0 * norm.cdf(d1))
     
     # Intuition: d1 is the moneyness of the option, the distance betwenn forward and strike.
     # Think the risk adjusted probability that the option will be exercised under the risk neutral measure.

@@ -23,3 +23,4 @@ def save_processed(data: pd.DataFrame, name: str):
     path = os.path.join(config['data']['processed'], f"{name}.csv")
     data.to_csv(path, index=False)
     print(f"Processed data saved to {path}")
+    
