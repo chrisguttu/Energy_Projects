@@ -1,26 +1,58 @@
 
-# src/data_loader.py
+import requests
 import pandas as pd
-import yfinance as yf
-import os
-import yaml
 
-def load_config():
-    with open("config/paths.yml", "r") as f:
-        return yaml.safe_load(f)
+# Define which commodities are monthly-only
+MONTHLY_ONLY = {"COPPER", "ALUMINUM", "WHEAT", "CORN", "COTTON", "COFFEE", "SUGAR", "ALL_COMMODITIES"}
 
-def download_yfinance(symbol: str, start: str, end: str) -> pd.DataFrame:
+def get_commodity(commodity: str, api_key: str) -> pd.DataFrame:
     """
-    Download market data from Yahoo Finance.
+    Download a single Alpha Vantage commodity as a pandas DataFrame.
+    Handles daily vs monthly intervals automatically.
     """
-    df = yf.download(symbol, start=start, end=end)
-    df.reset_index(inplace=True)
+    params = {"function": commodity, "apikey": api_key}
+    
+    if commodity in MONTHLY_ONLY:
+        params["interval"] = "monthly"  # required for these commodities
+
+    url = "https://www.alphavantage.co/query"
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+    data = r.json()
+    
+    if "data" not in data:
+        raise ValueError(f"No data returned for {commodity}. Response: {data}")
+
+    df = pd.DataFrame(data["data"])
+    df["date"] = pd.to_datetime(df["date"])
+    df["value"] = pd.to_numeric(df["value"], errors='coerce') # handle non-numeric values as alpha vantage use "." for missing data
+    df = df.set_index("date").sort_index()
+    df.rename(columns={"value": commodity}, inplace=True)
     return df
 
-def save_processed(data: pd.DataFrame, name: str):
-    """Save processed data to /data/processed."""
-    config = load_config()
-    path = os.path.join(config['data']['processed'], f"{name}.csv")
-    data.to_csv(path, index=False)
-    print(f"Processed data saved to {path}")
+
+
+def get_multiple_commodities(commodities: list, api_key: str) -> pd.DataFrame:
+    """
+    Download multiple commodities and combine into one DataFrame.
+    Each column corresponds to a commodity name.
+    """
+    all_data = []
+    for c in commodities:
+        try:
+            df = get_commodity(c, api_key)
+            all_data.append(df)
+            print(f"✅ {c} downloaded ({len(df)} records)")
+        except Exception as e:
+            print(f"⚠️ Skipped {c}: {e}")
+
+    # Combine all on date index
+    combined = pd.concat(all_data, axis=1)
+    return combined
+
+
+
+
+
+
     
