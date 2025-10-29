@@ -6,7 +6,7 @@ from typing import Union, Dict
 class Black76(OptionModel):
     """ 
     Black Scholes 76 taking forward/future as underlying. 
-    Also with the usual greeks
+    With the usual greeks
     Parameters:
     ----------
     F : float
@@ -24,11 +24,13 @@ class Black76(OptionModel):
         super().__init__(K, T, r, sigma)
         self.F = F
 
+
     def call_price(self) -> float:
         "Call price for a forward/future as underlying. That is why r is gone as it is accounted for in the underlying"
         d1 = (np.log(self.F / self.K) + 0.5 * self.sigma**2 * self.T) / (self.sigma * np.sqrt(self.T))
         d2 = d1 - self.sigma * np.sqrt(self.T)
         return np.exp(self.r * -self.T) * (self.F * norm.cdf(d1) - self.K * norm.cdf(d2))
+    
     
     def put_price(self) -> float:
         "Put price for a forward/future as underlying. That is why r is gone as it is accounted for in the underlying"
@@ -42,7 +44,7 @@ class Black76(OptionModel):
     #
     # This makes N(d1) * F the expected value of recieving the asset, and N(d2) * K is the expected Cost of paying the strike
 
-    #TODO: Add greeks
+    # The usual BS option greeks
     def delta(self, option_type: str = "Call") -> float:
         """ Delta for Call and Put using Black76 """
         d1, d2 = self.d1_d2(self.F)
@@ -65,6 +67,7 @@ class Black76(OptionModel):
         d1, d2 = self.d1_d2()
         return self.F * np.exp(-self.r * self.T) * norm.pdf(d1) * np.sqrt(self.T)
     
+
     def theta(self, option_type: str = "Call") -> float:
         """ Theta for Black76, sensitivity to time"""
         if option_type == "Call":
@@ -77,6 +80,7 @@ class Black76(OptionModel):
         t2 = self.r * np.exp(-self.r * self.T) * (self.K * norm.cdf(d2) - self.F * norm.cdf(d1))
         return t1 + t2
     
+
     def rho(self, option_type: str = "Call") -> float: 
         d1, d2 = self.d1_d2()
         if option_type == "Call":

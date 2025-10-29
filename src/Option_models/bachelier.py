@@ -6,6 +6,7 @@ from typing import Dict
 class Bachelier(OptionModel):
     """ 
     Bachelier normal model (can handle negative prices)
+    With the usual greeks
     Parameters: 
     ----------
         F: Float
@@ -51,16 +52,19 @@ class Bachelier(OptionModel):
         else:
             print("Choose option_type, either Call or Put")
 
+
     def gamma(self) -> float:
         """ Gamma under Bachelier"""
         d = self.d()
         return (np.exp(-self.r * self.T) * (norm.pdf(d) / (self.sigma_n * np.sqrt(self.T))))
     
+
     def vega(self): 
         """ Vega under Bachelier """
         d = self.d()
         return np.exp(-self.r * self.T) * ( np.sqrt(self.T * norm.pdf(d)))  
     
+
     def theta(self, option_type: str = "Call") -> float: 
         d = self.d()
         if option_type == "Call":
@@ -71,6 +75,7 @@ class Bachelier(OptionModel):
             t1 = (-self.r * P)
         t2 = - np.exp(-self.r * self.T) * ((self.sigma_n * norm.pdf(d)) / (2 * np.sqrt(self.T)))
         return t1 + t2
+    
     
     def rho(self, option_type: str = "Call") -> float:
         d = self.d()
