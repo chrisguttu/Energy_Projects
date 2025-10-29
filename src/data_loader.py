@@ -1,26 +1,57 @@
-
-# src/data_loader.py
+import requests
 import pandas as pd
-import yfinance as yf
-import os
 import yaml
+from pathlib import Path
 
-def load_config():
-    with open("config/paths.yml", "r") as f:
-        return yaml.safe_load(f)
+# --- Resolve config path ---
+# Find project root by going two levels up from this file (src → project_root)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CONFIG_PATH = PROJECT_ROOT / "config" / "settings.yml"
 
-def download_yfinance(symbol: str, start: str, end: str) -> pd.DataFrame:
-    """
-    Download market data from Yahoo Finance.
-    """
-    df = yf.download(symbol, start=start, end=end)
-    df.reset_index(inplace=True)
+if not CONFIG_PATH.exists():
+    raise FileNotFoundError(f"Config file not found at {CONFIG_PATH}")
+
+# --- Load config ---
+with open(CONFIG_PATH, "r") as f:
+    config = yaml.safe_load(f)
+
+API_KEY = config.get("api_key")
+if not API_KEY:
+    raise ValueError("API key is missing in setting.yml")
+
+MONTHLY_ONLY = set(config.get("commodities", {}).get("monthly_only", []))
+
+# --- Functions ---
+def get_commodity(commodity: str) -> pd.DataFrame:
+    params = {"function": commodity, "apikey": API_KEY}
+    if commodity in MONTHLY_ONLY:
+        params["interval"] = "monthly"
+
+    url = "https://www.alphavantage.co/query"
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+    data = r.json()
+
+    if "data" not in data:
+        raise ValueError(f"No data returned for {commodity}. Response: {data}")
+
+    df = pd.DataFrame(data["data"])
+    df["date"] = pd.to_datetime(df["date"])
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    df = df.set_index("date").sort_index()
+    df.rename(columns={"value": commodity}, inplace=True)
     return df
 
-def save_processed(data: pd.DataFrame, name: str):
-    """Save processed data to /data/processed."""
-    config = load_config()
-    path = os.path.join(config['data']['processed'], f"{name}.csv")
-    data.to_csv(path, index=False)
-    print(f"Processed data saved to {path}")
-    
+
+def get_multiple_commodities(commodities: list) -> pd.DataFrame:
+    all_data = []
+    for c in commodities:
+        try:
+            df = get_commodity(c)
+            all_data.append(df)
+            print(f"✅ {c} downloaded ({len(df)} records)")
+        except Exception as e:
+            print(f"⚠️ Skipped {c}: {e}")
+
+    combined = pd.concat(all_data, axis=1)
+    return combined
