@@ -1,0 +1,7 @@
+Create an overview over normalized assets moves. Normalize with the asset implied volatility? Proportionally large moves detected. 
+Model term structure with rolling 10 day z-score. Ie 3month Vix - 1 month vix. Shows when curve goes from contango to backwardation. 
+Option math
+Different measure of volatility
+Vol surfaces
+vol models hull / SABR / GARCH
+
