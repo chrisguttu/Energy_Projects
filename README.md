@@ -31,7 +31,7 @@ This project is my personal playground to explore, learn, and implement models a
 1. Build a **modular, reusable, and extensible framework** for energy derivatives and volatility modeling.  
 2. Learn and implement **option pricing, risk analytics, and advanced quantitative techniques** in energy markets.  
 3. Explore **cross-commodity relationships**, spreads, and the impact of market fundamentals.  
-4. Gradually develop towards **volatility trading strategies** and scenario analysis.  
+4. Gradually develop towards **energy and volatility trading strategies** and scenario analysis.  
 
 ---
 
