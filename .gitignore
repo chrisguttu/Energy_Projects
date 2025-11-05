@@ -3,4 +3,5 @@ __pycache__/
 .ipynb_checkpoints/
 .env
 src/data_loader.py
-
+ideas.txt
+roadmap.md

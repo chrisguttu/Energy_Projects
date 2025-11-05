@@ -20,6 +20,9 @@ if not API_KEY:
     raise ValueError("API key is missing in setting.yml")
 
 MONTHLY_ONLY = set(config.get("commodities", {}).get("monthly_only", []))
+if not MONTHLY_ONLY:
+    raise ValueError("List of monthly only commoditites are missing in settings.yml")
+
 
 # --- Functions ---
 def get_commodity(commodity: str) -> pd.DataFrame:
